@@ -23,9 +23,7 @@ app.post("/artist", async (req, res) => {
 
     const artist_response = await fetch(
       process.env.ARTIST_API_URL +
-        `?q=Kpop+${req.body.gender}+${
-          req.body.genre + "group"
-        }&type=artist&market=US&limit=1&offset=0`,
+        `?q=KPOP%20${req.body.genre}%20${req.body.gender}%20group&type=artist&limit=${process.env.ARTIST_API_LIMIT}&offset=0`,
       {
         method: process.env.ARTIST_API_METHOD,
         headers: {
@@ -36,8 +34,13 @@ app.post("/artist", async (req, res) => {
 
     const artist_json = await artist_response.json();
 
-    const artist_name = artist_json.artists.items[0].name;
-    const artist_id = artist_json.artists.items[0].uri.split(":")[2];
+    let choose_random = Math.floor(
+      Math.random() * process.env.ARTIST_API_LIMIT
+    );
+
+    const artist_name = artist_json.artists.items[choose_random].name;
+    const artist_id =
+      artist_json.artists.items[choose_random].uri.split(":")[2];
 
     const top_track_response = await fetch(
       process.env.TOP_TRACKS_URL + `/${artist_id}/top-tracks`,
