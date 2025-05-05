@@ -22,10 +22,12 @@ app.post("/artist", async (req, res) => {
     const token_json = await token_response.json();
 
     const artist_response = await fetch(
-      process.env.SPOTIFY_API_URL +
-        `?q=Kpop+${req.body.gender}+${req.body.genre}&type=artist&market=US&limit=1&offset=0`,
+      process.env.ARTIST_API_URL +
+        `?q=Kpop+${req.body.gender}+${
+          req.body.genre + "group"
+        }&type=artist&market=US&limit=1&offset=0`,
       {
-        method: process.env.SPOTIFY_API_METHOD,
+        method: process.env.ARTIST_API_METHOD,
         headers: {
           Authorization: `${token_json.token_type} ${token_json.access_token}`,
         },
@@ -33,20 +35,35 @@ app.post("/artist", async (req, res) => {
     );
 
     const artist_json = await artist_response.json();
-    console.log(artist_json.artists.items[0]);
-  } catch (error) {
-    console.error(error.message);
-    res.status(error.status);
-  }
 
-  res.status(200).json({
-    artist: {
-      name: "TWICE",
-      gender: "female",
-      tags: ["Ballad", "Pop"],
-      song: { name: "Strategy(Feat. Megan The Stallion)" },
-    },
-  });
+    const artist_name = artist_json.artists.items[0].name;
+    const artist_id = artist_json.artists.items[0].uri.split(":")[2];
+
+    const top_track_response = await fetch(
+      process.env.TOP_TRACKS_URL + `/${artist_id}/top-tracks`,
+      {
+        method: process.env.TOP_TRACKS_METHOD,
+        headers: {
+          Authorization: `${token_json.token_type} ${token_json.access_token}`,
+        },
+      }
+    );
+
+    const top_tracks_json = await top_track_response.json();
+
+    const album_name = top_tracks_json.tracks[0].album.name;
+
+    res.status(200).json({
+      artist: {
+        name: artist_name,
+        gender: req.body.gender,
+        tags: ["ballad", "k-pop"],
+        song: { name: album_name },
+      },
+    });
+  } catch (error) {
+    console.error(error);
+  }
 });
 
 app.listen(port, () => {
