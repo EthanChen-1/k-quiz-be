@@ -21,9 +21,16 @@ app.post("/artist", async (req, res) => {
 
     const token_json = await token_response.json();
 
+    const searchParams = new URLSearchParams({
+      q: `kpop ${req.body.gender} group ${req.body.genre}`,
+      type: "artist",
+      market: "US",
+      limit: process.env.ARTIST_API_LIMIT,
+      offset: 0,
+    });
+
     const artist_response = await fetch(
-      process.env.ARTIST_API_URL +
-        `?q=KPOP%20${req.body.genre}%20${req.body.gender}%20group&type=artist&limit=${process.env.ARTIST_API_LIMIT}&offset=0`,
+      `${process.env.ARTIST_API_URL}?${searchParams.toString()}`,
       {
         method: process.env.ARTIST_API_METHOD,
         headers: {
